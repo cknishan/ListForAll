@@ -1,5 +1,5 @@
 // src/routes/todos/+page.server.ts
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
 interface Todo {
@@ -11,9 +11,15 @@ interface Todo {
 // Simulated database
 let todos: Todo[] = [];
 
-export const load: PageServerLoad = () => {
-  return { todos };
-};
+export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession } }) => {
+  const { session } = await safeGetSession()
+
+  if (!session) {
+    redirect(303, '/')
+  }
+
+  return { session,  todos }
+}
 
 export const actions: Actions = {
   add: async ({ request }) => {
