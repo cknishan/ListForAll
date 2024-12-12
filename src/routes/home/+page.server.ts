@@ -32,13 +32,28 @@ export const actions: Actions = {
     }
 
     const formData = await request.formData();
-    const content = formData.get('content') as string;
-    console.log(formData);
+    const content = formData.get('content')?.toString().trim(); // Trim whitespace
 
-    if (!content) {
-      return fail(400, { error: 'Task content cannot be empty' });
+    if (!content || content.length === 0) {
+      return fail(400, { error: 'Task content cannot be empty or whitespace only' });
     }
 
+    // Check for duplicate tasks (case-insensitive)
+    const { data: existingTasks, error: fetchError } = await supabase
+      .from('task')
+      .select('task_name')
+      .eq('user_id', session.user.id);
+
+    if (fetchError) {
+      console.error('Error checking for duplicates:', fetchError);
+      return fail(500, { error: 'Failed to check for duplicates' });
+    }
+
+    if (existingTasks?.some(task => task.task_name.toLowerCase() === content.toLowerCase())) {
+      return fail(400, { error: 'Task already exists' });
+    }
+
+    // Insert the new task
     const { error } = await supabase
       .from('task')
       .insert([{ task_name: content, completed: false, user_id: session.user.id }]);
@@ -59,7 +74,6 @@ export const actions: Actions = {
 
     const formData = await request.formData();
     const id = Number(formData.get('id'));
-    console.log(formData);
 
     // Fetch the current state of the task
     const { data: todo, error: fetchError } = await supabase
@@ -83,7 +97,6 @@ export const actions: Actions = {
       return fail(500, { error: 'Failed to toggle task' });
     }
 
-    console.log(formData);
     return { success: true };
   },
 
@@ -94,7 +107,6 @@ export const actions: Actions = {
     }
 
     const formData = await request.formData();
-    console.log(formData);
     const id = Number(formData.get('id'));
 
     const { error } = await supabase

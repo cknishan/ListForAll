@@ -1,14 +1,48 @@
-<!-- src/routes/home/+page.svelte -->
 <script lang="ts">
 	export let data; // Loaded server data (todos)
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 
 	let loading = false;
+	let errorMessage: string | null = null; // To display error messages from the server
+
+	const handleError = async (res: Response | undefined) => {
+		// Ensure res is defined and not success status
+		if (res && !res.ok) {
+			try {
+				const errorData = await res.json();
+				errorMessage = errorData.error || 'An unexpected error occurred';
+			} catch (parseError) {
+				// Fallback error message if JSON parsing fails
+				errorMessage = 'An unexpected error occurred';
+				console.error('Error parsing response:', parseError);
+			}
+		} else {
+			errorMessage = null;
+		}
+	};
 
 	const toggleTodo: SubmitFunction = () => {
-		return async ({ update }) => {
+		loading = true;
+		return async ({ result, update }) => {
+			if (result.type === 'failure') {
+				// Handle server-side validation errors
+				errorMessage = result.data?.error || 'An unexpected error occurred';
+			}
 			await update();
+			loading = false;
+		};
+	};
+
+	const addTodo: SubmitFunction = () => {
+		loading = true;
+		return async ({ result, update }) => {
+			if (result.type === 'failure') {
+				// Handle server-side validation errors
+				errorMessage = result.data?.error || 'An unexpected error occurred';
+			}
+			await update();
+			loading = false;
 		};
 	};
 
@@ -28,7 +62,7 @@
 	<h1 class="mb-6 text-center text-2xl font-bold">To-Do List</h1>
 
 	<!-- Add Task Form -->
-	<form method="POST" action="?/add" class="mb-4 flex gap-2">
+	<form method="POST" action="?/add" use:enhance={addTodo} class="mb-4 flex gap-2">
 		<input
 			type="text"
 			name="content"
@@ -44,6 +78,11 @@
 			Add Task
 		</button>
 	</form>
+
+	<!-- Display error message below the Add Task form -->
+	{#if errorMessage}
+		<p class="mb-4 text-sm text-red-600">{errorMessage}</p>
+	{/if}
 
 	<!-- Pending Tasks -->
 	<h2 class="mt-4 text-xl font-semibold">Pending Tasks</h2>
@@ -65,7 +104,7 @@
 					</span>
 				</div>
 
-				<form method="POST" action="?/delete">
+				<form method="POST" action="?/delete" use:enhance={toggleTodo}>
 					<input type="hidden" name="id" value={todo.task_id} />
 					<button
 						type="submit"
@@ -99,7 +138,7 @@
 					</span>
 				</div>
 
-				<form method="POST" action="?/delete">
+				<form method="POST" action="?/delete" use:enhance={toggleTodo}>
 					<input type="hidden" name="id" value={todo.task_id} />
 					<button
 						type="submit"
