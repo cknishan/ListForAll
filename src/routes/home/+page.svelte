@@ -1,16 +1,27 @@
-<!-- src/routes/todos/+page.svelte -->
+<!-- src/routes/home/+page.svelte -->
 <script lang="ts">
 	export let data; // Loaded server data (todos)
-
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 
-	export let form;
+	// export let form;
 
 	// let { session, supabase, profile } = data;
 	// $: ({ session, supabase, profile } = data);
 
 	let loading = false;
+	const toggleTodo: SubmitFunction = () => {
+        return async ({ update }) => {
+            await update();
+        };
+    };
+
+    function handleToggle(taskId: number) {
+        const form = document.querySelector(`form input[name="id"][value="${taskId}"]`)?.closest('form') as HTMLFormElement;
+        if (form) {
+            form.requestSubmit();
+        }
+    }
 </script>
 
 <svelte:head>
@@ -40,26 +51,30 @@
 
 	<!-- Task List -->
 	<ul class="space-y-4">
-		{#each data.todos as todo (todo.id)}
+		{#each data.todos as todo (todo.task_id)}
 			<li class="flex items-center justify-between rounded bg-gray-100 p-3">
 				<div class="flex items-center gap-2">
-					<form method="POST" action="?/toggle">
-						<input type="hidden" name="id" value={todo.id} />
-						<input
-							type="checkbox"
-							checked={todo.completed}
-							on:change
-							class="h-5 w-5 text-blue-500 focus:ring focus:ring-blue-300"
-						/>
-					</form>
-
+					<form 
+                    method="POST" 
+                    action="?/toggle" 
+                    use:enhance={toggleTodo}
+                >
+                    <input type="hidden" name="id" value={todo.task_id} />
+                    <input
+                        type="checkbox"
+                        checked={todo.completed}
+                        on:change={() => handleToggle(todo.task_id)}
+                        class="h-5 w-5 text-blue-500 focus:ring focus:ring-blue-300"
+                    />
+                </form>
 					<span class={todo.completed ? 'text-gray-500 line-through' : ''}>
-						{todo.content}
+						{todo.task_name}
+						{todo.task_id}
 					</span>
 				</div>
 
 				<form method="POST" action="?/delete">
-					<input type="hidden" name="id" value={todo.id} />
+					<input type="hidden" name="id" value={todo.task_id} />
 					<button
 						type="submit"
 						class="rounded bg-red-500 px-3 py-1 text-white hover:bg-red-600 focus:outline-none"

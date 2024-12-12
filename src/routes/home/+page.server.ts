@@ -1,5 +1,5 @@
-// src/routes/todos/+page.server.ts
-// src/routes/todos/+page.server.ts
+// src/routes/home/+page.server.ts
+
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession 
 
   // Fetch tasks from Supabase
   const { data: todos, error } = await supabase
-    .from('todos')
+    .from('task')
     .select('*')
     .eq('user_id', session.user.id);
 
@@ -33,14 +33,15 @@ export const actions: Actions = {
 
     const formData = await request.formData();
     const content = formData.get('content') as string;
+    console.log(formData);
 
     if (!content) {
       return fail(400, { error: 'Task content cannot be empty' });
     }
 
     const { error } = await supabase
-      .from('todos')
-      .insert([{ content, completed: false, user_id: session.user.id }]);
+      .from('task')
+      .insert([{ task_name: content, completed: false, user_id: session.user.id }]);
 
     if (error) {
       console.error('Error adding task:', error);
@@ -58,12 +59,13 @@ export const actions: Actions = {
 
     const formData = await request.formData();
     const id = Number(formData.get('id'));
+    console.log(formData);
 
     // Fetch the current state of the task
     const { data: todo, error: fetchError } = await supabase
-      .from('todos')
+      .from('task')
       .select('completed')
-      .eq('id', id)
+      .eq('task_id', id)
       .single();
 
     if (fetchError || !todo) {
@@ -72,15 +74,16 @@ export const actions: Actions = {
     }
 
     const { error: updateError } = await supabase
-      .from('todos')
+      .from('task')
       .update({ completed: !todo.completed })
-      .eq('id', id);
+      .eq('task_id', id);
 
     if (updateError) {
       console.error('Error toggling task:', updateError);
       return fail(500, { error: 'Failed to toggle task' });
     }
 
+    console.log(formData);
     return { success: true };
   },
 
@@ -91,12 +94,13 @@ export const actions: Actions = {
     }
 
     const formData = await request.formData();
+    console.log(formData);
     const id = Number(formData.get('id'));
 
     const { error } = await supabase
-      .from('todos')
+      .from('task')
       .delete()
-      .eq('id', id);
+      .eq('task_id', id);
 
     if (error) {
       console.error('Error deleting task:', error);
