@@ -1,4 +1,3 @@
-<!-- src/routes/+layout.svelte -->
 <script lang="ts">
 	import '../styles.css';
 	import { invalidate } from '$app/navigation';
@@ -9,6 +8,7 @@
 	let categories: any = [];
 	let newCategory = '';
 	let { supabase, session } = data;
+	let errorMessage: string = '';
 
 	$: ({ supabase, session } = data);
 
@@ -25,18 +25,39 @@
 
 	// Add a new category for the logged-in user
 	async function addCategory() {
+		errorMessage = ''; // Clear previous error
 		if (!newCategory.trim() || !session) return; // Validate input and session
+
+		// Check if the category name already exists (case-insensitive)
+		const { data: existingCategories, error: fetchError } = await supabase
+			.from('category')
+			.select('category_name')
+			.ilike('category_name', newCategory.trim()); // ilike is case-insensitive
+
+		if (fetchError) {
+			console.error('Error checking category:', fetchError);
+			return;
+		}
+
+		if (existingCategories && existingCategories.length > 0) {
+			errorMessage = `The category "${newCategory}" already exists.`;
+			return;
+		}
+
+		// Insert the new category if it doesn't exist
 		const { error } = await supabase.from('category').insert([
-			{ 
-				category_name: newCategory, 
+			{
+				category_name: newCategory.trim(),
 				user_id: session.user.id // Associate the category with the logged-in user
 			}
 		]);
+
 		if (!error) {
 			await fetchCategories(); // Refresh the categories list
 			newCategory = '';
 		} else {
 			console.error('Error adding category:', error);
+			errorMessage = 'Failed to add category. Please try again.';
 		}
 	}
 
@@ -74,6 +95,10 @@
 			>
 				➕ Add List
 			</button>
+			<!-- Display Error Message -->
+			{#if errorMessage}
+				<p class="mt-2 text-sm text-red-600">{errorMessage}</p>
+			{/if}
 		</div>
 
 		<!-- Category List -->
