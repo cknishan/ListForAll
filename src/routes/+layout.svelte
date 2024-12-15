@@ -6,25 +6,37 @@
 
 	export let data;
 
-	let categories = [];
+	let categories: any = [];
 	let newCategory = '';
 	let { supabase, session } = data;
 
 	$: ({ supabase, session } = data);
 
-	// Fetch categories from Supabase
+	// Fetch categories for the logged-in user
 	async function fetchCategories() {
-		const { data, error } = await supabase.from('category').select('*');
+		if (!session) return; // Ensure the user is logged in
+		const { data, error } = await supabase
+			.from('category')
+			.select('*')
+			.eq('user_id', session.user.id); // Fetch categories where user_id matches session
 		if (!error) categories = data;
+		else console.error('Error fetching categories:', error);
 	}
 
-	// Add a new category
+	// Add a new category for the logged-in user
 	async function addCategory() {
-		if (!newCategory.trim()) return;
-		const { error } = await supabase.from('category').insert([{ category_name: newCategory }]);
+		if (!newCategory.trim() || !session) return; // Validate input and session
+		const { error } = await supabase.from('category').insert([
+			{ 
+				category_name: newCategory, 
+				user_id: session.user.id // Associate the category with the logged-in user
+			}
+		]);
 		if (!error) {
-			await fetchCategories();
+			await fetchCategories(); // Refresh the categories list
 			newCategory = '';
+		} else {
+			console.error('Error adding category:', error);
 		}
 	}
 
