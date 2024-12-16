@@ -4,32 +4,30 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession }, params }) => {
 	const { session } = await safeGetSession();
 
-	// Redirect if no session (user not logged in)
 	if (!session) {
 		throw redirect(303, '/');
 	}
 
 	const { category_id } = params;
 
-	// Fetch the category and ensure it belongs to the logged-in user
+	// Ensure category exists and belongs to the logged-in user
 	const { data: category, error: categoryError } = await supabase
 		.from('category')
 		.select('*')
 		.eq('category_id', category_id)
-		.eq('user_id', session.user.id) // Ensure category belongs to user
+		.eq('user_id', session.user.id)
 		.single();
 
 	if (categoryError || !category) {
-		console.error('Unauthorized access to category or category not found');
-		throw redirect(303, '/'); // Redirect if unauthorized or not found
+		throw redirect(303, '/'); // Redirect if the category does not exist or is unauthorized
 	}
 
-	// Fetch tasks for this specific category and user
+	// Fetch tasks for this category
 	const { data: tasks, error: tasksError } = await supabase
 		.from('task')
 		.select('*')
 		.eq('category_id', category_id)
-		.eq('user_id', session.user.id); // Ensure tasks belong to the logged-in user
+		.eq('user_id', session.user.id);
 
 	if (tasksError) {
 		return fail(500, { error: 'Failed to fetch tasks' });
@@ -42,14 +40,13 @@ export const actions: Actions = {
 	add: async ({ request, locals: { supabase, safeGetSession }, params }) => {
 		const { session } = await safeGetSession();
 
-		// Redirect if no session
 		if (!session) {
 			throw redirect(303, '/');
 		}
 
 		const { category_id } = params;
 
-		// Check if the category exists and belongs to the user
+		// Ensure the category exists and belongs to the user
 		const { data: category, error: categoryError } = await supabase
 			.from('category')
 			.select('category_id')
@@ -58,11 +55,9 @@ export const actions: Actions = {
 			.single();
 
 		if (categoryError || !category) {
-			console.error('Unauthorized access to category');
 			throw redirect(303, '/');
 		}
 
-		// Add a new task
 		const formData = await request.formData();
 		const content = formData.get('content')?.toString().trim();
 
@@ -70,7 +65,7 @@ export const actions: Actions = {
 			return fail(400, { error: 'Task content cannot be empty or whitespace only' });
 		}
 
-		// Check for duplicate tasks in this category
+		// Check for duplicate tasks (case-insensitive) in this category
 		const { data: existingTasks, error: fetchError } = await supabase
 			.from('task')
 			.select('task_name')
@@ -85,6 +80,7 @@ export const actions: Actions = {
 			return fail(400, { error: 'Task already exists in this category' });
 		}
 
+		// Insert the new task
 		const { error } = await supabase.from('task').insert([
 			{
 				task_name: content,
@@ -103,14 +99,16 @@ export const actions: Actions = {
 	},
 
 	toggle: async ({ request, locals: { supabase, safeGetSession } }) => {
-		// Reuse toggle logic but ensure tasks belong to the user
 		const { session } = await safeGetSession();
-		if (!session) throw redirect(303, '/');
+
+		if (!session) {
+			throw redirect(303, '/');
+		}
 
 		const formData = await request.formData();
-		const id = Number(formData.get('id'));
+		const id = formData.get('id')?.toString();
 
-		// Fetch the task and ensure it belongs to the user
+		// Ensure the task belongs to the user
 		const { data: task, error: fetchError } = await supabase
 			.from('task')
 			.select('completed, user_id')
@@ -122,6 +120,7 @@ export const actions: Actions = {
 			return fail(404, { error: 'Task not found or unauthorized' });
 		}
 
+		// Toggle the task's completion status
 		const { error: updateError } = await supabase
 			.from('task')
 			.update({ completed: !task.completed })
@@ -136,12 +135,15 @@ export const actions: Actions = {
 
 	delete: async ({ request, locals: { supabase, safeGetSession } }) => {
 		const { session } = await safeGetSession();
-		if (!session) throw redirect(303, '/');
+
+		if (!session) {
+			throw redirect(303, '/');
+		}
 
 		const formData = await request.formData();
-		const id = Number(formData.get('id'));
+		const id = formData.get('id')?.toString();
 
-		// Ensure task belongs to the user
+		// Ensure the task belongs to the user
 		const { data: task, error: fetchError } = await supabase
 			.from('task')
 			.select('user_id')
@@ -153,6 +155,7 @@ export const actions: Actions = {
 			return fail(404, { error: 'Task not found or unauthorized' });
 		}
 
+		// Delete the task
 		const { error } = await supabase.from('task').delete().eq('task_id', id);
 
 		if (error) {
