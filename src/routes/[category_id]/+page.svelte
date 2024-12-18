@@ -1,7 +1,6 @@
 <script lang="ts">
 	export let data;
 
-	let { category, tasks } = data;
 	let loading = false;
 	let errorMessage: string | null = null;
 
@@ -20,7 +19,7 @@
 	};
 </script>
 
-<h1 class="text-2xl font-bold mb-4">Tasks for {category.category_name}</h1>
+<h1 class="text-2xl font-bold mb-4">Tasks for {data.category.category_name}</h1>
 
 <!-- Add Task Form -->
 <form method="POST" action="?/add" use:enhance={addTask} class="mb-4 flex gap-2">
@@ -44,7 +43,7 @@
 <!-- Pending Tasks -->
 <h2 class="text-xl font-semibold">Pending Tasks</h2>
 <ul>
-	{#each tasks.filter(t => !t.completed) as task}
+	{#each data.tasks.filter(t => !t.completed) as task}
 		<li>{task.task_name}</li>
 	{/each}
 </ul>
@@ -52,7 +51,7 @@
 <!-- Completed Tasks -->
 <h2 class="text-xl font-semibold mt-4">Completed Tasks</h2>
 <ul>
-	{#each tasks.filter(t => t.completed) as task}
+	{#each data.tasks.filter(t => t.completed) as task}
 		<li class="line-through">{task.task_name}</li>
 	{/each}
 </ul>

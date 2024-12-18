@@ -30,10 +30,11 @@ export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession 
 		.eq('user_id', session.user.id);
 
 	if (tasksError) {
-		return fail(500, { error: 'Failed to fetch tasks' });
+		console.error('Error fetching tasks:', tasksError);
+		return { category, tasks: [], session };
 	}
 
-	return { category, tasks };
+	return { category, tasks, session };
 };
 
 export const actions: Actions = {
