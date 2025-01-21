@@ -160,7 +160,10 @@
 </svelte:head>
 
 <div class="flex h-screen">
+	
 	<!-- Sidebar -->
+	 {#if session}
+
 	<nav class="w-64 bg-gray-100 border-r border-gray-200 p-4">
 		<!-- New Category Input -->
 		<div class="mb-6">
@@ -246,12 +249,15 @@
 		</div>
 	</nav>
 
+	{/if}
+
 	<!-- Main Content -->
 	<main class="flex-1 p-6 bg-gray-50 overflow-y-auto">
 		<slot />
 	</main>
 
 	<!-- Confirmation Dialog -->
+	 {#if session}
 	<ConfirmationDialog
 		bind:show={showConfirmDialog}
 		message={confirmMessage}
@@ -261,4 +267,5 @@
 			categoryToDelete = null;
 		}}
 	/>
+	{/if}
 </div>
