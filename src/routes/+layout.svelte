@@ -17,6 +17,7 @@
 	let categoryToDelete: string | null = null; // ID of the category to delete
 	let editMode = false; // Tracks if a category is being edited
 	let editedCategory: { id: string; name: string } | null = null; // Stores the category being edited
+	let sidebarOpen = false; // Controls visibility of the sidebar
 
 	$: ({ supabase, session } = data); // Update supabase and session reactively
 
@@ -160,112 +161,110 @@
 </svelte:head>
 
 <div class="flex h-screen">
-	
 	<!-- Sidebar -->
-	 {#if session}
-
-	<nav class="w-64 bg-gray-100 border-r border-gray-200 p-4">
-		<!-- New Category Input -->
-		<div class="mb-6">
-			<input
-				type="text"
-				placeholder="New list..."
-				bind:value={newCategory}
-				class="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
-			/>
-			<button
-				on:click={addCategory}
-				class="mt-2 w-full bg-blue-500 text-white rounded py-2"
-			>
-				➕ Add List
-			</button>
-			<!-- Display Error Message -->
-			{#if errorMessage}
-				<p class="mt-2 text-sm text-red-600">{errorMessage}</p>
+	{#if session}
+		<button
+			class="fixed right-4 top-4 z-50 rounded-md bg-theme-primary p-2 text-white md:hidden"
+			on:click={() => (sidebarOpen = !sidebarOpen)}
+		>
+			{#if sidebarOpen}
+				&times; <!-- Close Icon -->
+			{:else}
+				&#9776; <!-- Hamburger Icon -->
 			{/if}
-		</div>
+		</button>
 
-		<!-- Category List -->
-		<ul>
-			<li>
-				<a href="/" class="block py-2 px-3 rounded hover:bg-gray-200">
-					All Tasks
-				</a>
-			</li>
-			{#each categories as category}
-				<li class="flex justify-between items-center group">
-					<a href="/{category.category_id}" class="block py-2 px-3 rounded hover:bg-gray-200">
-						{category.category_name}
-					</a>
-					<div class="hidden group-hover:flex space-x-2">
-						<button
-							class="text-blue-500 hover:text-blue-700"
-							on:click={() => enableEditMode(category)}
-						>
-							✏️
-						</button>
-						<button
-							class="text-red-500 hover:text-red-700"
-							on:click={() => confirmDeleteCategory(category.category_id, category.category_name)}
-						>
-							🗑️
-						</button>
-					</div>
-				</li>
-			{/each}
-		</ul>
-
-		<!-- Edit Category -->
-		{#if editMode && editedCategory}
-			<div class="mt-4">
-				<h3 class="text-lg font-semibold">Edit Category</h3>
+		<nav class="w-64 border-r border-gray-200 bg-gray-100 p-4 fixed inset-y-0 left-0 transform transition-transform duration-300 ease-in-out w-64 bg-white border-r border-gray-200 p-4 
+		{sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0">
+			<!-- New Category Input -->
+			<div class="mb-6">
 				<input
 					type="text"
-					bind:value={editedCategory.name}
-					class="w-full px-3 py-2 border rounded focus:outline-none focus:ring mt-2"
+					placeholder="New list..."
+					bind:value={newCategory}
+					class="w-full rounded border px-3 py-2 focus:outline-none focus:ring"
 				/>
-				<div class="flex justify-between mt-2">
-					<button
-						class="bg-blue-500 text-white px-4 py-2 rounded"
-						on:click={updateCategory}
-					>
-						Update
-					</button>
-					<button
-						class="bg-gray-300 text-gray-700 px-4 py-2 rounded"
-						on:click={cancelEditMode}
-					>
-						Cancel
-					</button>
-				</div>
+				<button on:click={addCategory} class="mt-2 w-full rounded bg-blue-500 py-2 text-white">
+					➕ Add List
+				</button>
+				<!-- Display Error Message -->
+				{#if errorMessage}
+					<p class="mt-2 text-sm text-red-600">{errorMessage}</p>
+				{/if}
 			</div>
-		{/if}
 
-		<!-- Settings -->
-		<div class="mt-6">
-			<a href="/account" class="block py-2 px-3 rounded bg-gray-200 hover:bg-gray-300">
-				⚙️ Account Settings
-			</a>
-		</div>
-	</nav>
+			<!-- Category List -->
+			<ul>
+				<li>
+					<a href="/" class="block rounded px-3 py-2 hover:bg-gray-200"> All Tasks </a>
+				</li>
+				{#each categories as category}
+					<li class="group flex items-center justify-between">
+						<a href="/{category.category_id}" class="block rounded px-3 py-2 hover:bg-gray-200">
+							{category.category_name}
+						</a>
+						<div class="hidden space-x-2 group-hover:flex">
+							<button
+								class="text-blue-500 hover:text-blue-700"
+								on:click={() => enableEditMode(category)}
+							>
+								✏️
+							</button>
+							<button
+								class="text-red-500 hover:text-red-700"
+								on:click={() => confirmDeleteCategory(category.category_id, category.category_name)}
+							>
+								🗑️
+							</button>
+						</div>
+					</li>
+				{/each}
+			</ul>
 
+			<!-- Edit Category -->
+			{#if editMode && editedCategory}
+				<div class="mt-4">
+					<h3 class="text-lg font-semibold">Edit Category</h3>
+					<input
+						type="text"
+						bind:value={editedCategory.name}
+						class="mt-2 w-full rounded border px-3 py-2 focus:outline-none focus:ring"
+					/>
+					<div class="mt-2 flex justify-between">
+						<button class="rounded bg-blue-500 px-4 py-2 text-white" on:click={updateCategory}>
+							Update
+						</button>
+						<button class="rounded bg-gray-300 px-4 py-2 text-gray-700" on:click={cancelEditMode}>
+							Cancel
+						</button>
+					</div>
+				</div>
+			{/if}
+
+			<!-- Settings -->
+			<div class="mt-6">
+				<a href="/account" class="block rounded bg-gray-200 px-3 py-2 hover:bg-gray-300">
+					⚙️ Account Settings
+				</a>
+			</div>
+		</nav>
 	{/if}
 
 	<!-- Main Content -->
-	<main class="flex-1 bg-gray-50 overflow-y-auto">
+	<main class="flex-1 overflow-y-auto transition-all duration-300 ease-in-out {sidebarOpen ? 'ml-64' : 'ml-0'}">
 		<slot />
 	</main>
 
 	<!-- Confirmation Dialog -->
-	 {#if session}
-	<ConfirmationDialog
-		bind:show={showConfirmDialog}
-		message={confirmMessage}
-		onConfirm={deleteCategory}
-		onCancel={() => {
-			showConfirmDialog = false;
-			categoryToDelete = null;
-		}}
-	/>
+	{#if session}
+		<ConfirmationDialog
+			bind:show={showConfirmDialog}
+			message={confirmMessage}
+			onConfirm={deleteCategory}
+			onCancel={() => {
+				showConfirmDialog = false;
+				categoryToDelete = null;
+			}}
+		/>
 	{/if}
 </div>
