@@ -252,7 +252,7 @@
 	{/if}
 
 	<!-- Main Content -->
-	<main class="flex-1 p-6 bg-gray-50 overflow-y-auto">
+	<main class="flex-1 bg-gray-50 overflow-y-auto">
 		<slot />
 	</main>
 
