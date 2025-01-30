@@ -163,6 +163,7 @@
 <div class="flex h-screen">
 	<!-- Sidebar -->
 	{#if session}
+	<section>
 		<button
 			class="fixed right-4 top-4 z-50 rounded-md bg-theme-primary p-2 text-white md:hidden"
 			on:click={() => (sidebarOpen = !sidebarOpen)}
@@ -174,7 +175,7 @@
 			{/if}
 		</button>
 
-		<nav class="w-64 border-r border-gray-200 bg-gray-100 p-4 fixed inset-y-0 left-0 transform transition-transform duration-300 ease-in-out w-64 bg-white border-r border-gray-200 p-4 
+		<nav class="w-64 border-r border-gray-200 bg-gray-100 max-md:fixed max-md:inset-y-0 max-md:left-0 transform transition-transform duration-300 ease-in-out w-64 bg-white border-r border-gray-200 p-4 
 		{sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0">
 			<!-- New Category Input -->
 			<div class="mb-6">
@@ -248,6 +249,7 @@
 				</a>
 			</div>
 		</nav>
+	</section>
 	{/if}
 
 	<!-- Main Content -->
@@ -255,7 +257,7 @@
 		<slot />
 	</main>
 
-	<!-- Confirmation Dialog -->
+	<!-- Confirmation Dialog
 	{#if session}
 		<ConfirmationDialog
 			bind:show={showConfirmDialog}
@@ -266,5 +268,5 @@
 				categoryToDelete = null;
 			}}
 		/>
-	{/if}
+	{/if} -->
 </div>
