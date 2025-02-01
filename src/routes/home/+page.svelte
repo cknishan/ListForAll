@@ -1,3 +1,4 @@
+<!--  -->
 <script lang="ts">
 	export let data; // Loaded server data (todos)
   
@@ -8,6 +9,10 @@
   
 	let loading = false;
 	let errorMessage: string | null = null; // For server error messages
+  
+	// Instead of directly using data.todos everywhere,
+	// create a local reactive variable that holds all todos.
+	let todos = data.todos;
   
 	// For deletion confirmation
 	let showConfirmDialog = false;
@@ -37,6 +42,9 @@
 		  errorMessage = result.data?.error || 'An unexpected error occurred';
 		}
 		await update();
+		// After the update, reassign todos from data in case the server changed anything.
+		// (Alternatively, you can update the local copy optimistically.)
+		todos = (await dataUpdate()).todos;
 		loading = false;
 	  };
 	};
@@ -49,9 +57,20 @@
 		  errorMessage = result.data?.error || 'An unexpected error occurred';
 		}
 		await update();
+		// Re-fetch todos after a new task is added.
+		todos = (await dataUpdate()).todos;
 		loading = false;
 	  };
 	};
+  
+	// Helper function: re-run the load function by invalidating the data,
+	// then update the local todos variable.
+	async function dataUpdate() {
+	  await invalidate();
+	  // You can also fetch the latest todos directly if you have an API endpoint.
+	  // For now, assume that `data.todos` is automatically updated.
+	  return data;
+	}
   
 	// For toggling a task from a checkbox change:
 	function handleToggle(taskId: number) {
@@ -73,7 +92,7 @@
 	}
   
 	// This function is called when the user confirms deletion in the dialog.
-	// It sends a POST request to your delete action and refreshes the data.
+	// It sends a POST request to your delete action and updates the local todos.
 	async function handleConfirmDelete() {
 	  if (!taskToDelete) return;
 	  loading = true;
@@ -88,13 +107,19 @@
 		body: formData
 	  });
   
-	  // Handle any errors returned from the server
+	  // Handle any errors returned from the server.
 	  await handleError(res);
   
-	  // Refresh the data from your load function so the deleted task no longer appears.
-	  await invalidate();
+	  // If deletion is successful, update the local todos array immediately.
+	  if (res.ok) {
+		todos = todos.filter((todo) => todo.task_id !== Number(taskToDelete));
+	  }
   
-	  // Reset state variables
+	  // Optionally, you can re-fetch data from the server:
+	  // await invalidate();
+	  // todos = (await dataUpdate()).todos;
+  
+	  // Reset state variables.
 	  loading = false;
 	  showConfirmDialog = false;
 	  taskToDelete = null;
@@ -134,7 +159,7 @@
 	<!-- Pending Tasks -->
 	<h2 class="mt-4 text-xl font-semibold">Pending Tasks</h2>
 	<ul class="space-y-4">
-	  {#each data.todos.filter((todo) => !todo.completed) as todo (todo.task_id)}
+	  {#each todos.filter((todo) => !todo.completed) as todo (todo.task_id)}
 		<li class="flex items-center justify-between rounded bg-gray-100 p-3">
 		  <div class="flex items-center gap-2">
 			<form method="POST" action="?/toggle" use:enhance={toggleTodo}>
@@ -151,8 +176,7 @@
 			</span>
 		  </div>
   
-		  <!-- Instead of directly submitting the delete form,
-			   we use a button that triggers our confirmation dialog. -->
+		  <!-- Use a button that triggers our confirmation dialog instead of immediately deleting -->
 		  <div>
 			<button
 			  type="button"
@@ -170,7 +194,7 @@
 	<!-- Completed Tasks -->
 	<h2 class="mt-8 text-xl font-semibold">Completed Tasks</h2>
 	<ul class="space-y-4">
-	  {#each data.todos.filter((todo) => todo.completed) as todo (todo.task_id)}
+	  {#each todos.filter((todo) => todo.completed) as todo (todo.task_id)}
 		<li class="flex items-center justify-between rounded bg-gray-100 p-3">
 		  <div class="flex items-center gap-2">
 			<form method="POST" action="?/toggle" use:enhance={toggleTodo}>
@@ -186,24 +210,23 @@
 			  {todo.task_name}
 			</span>
 		  </div>
-  
-		  <!-- Here we use the normal delete form since you might choose not to confirm deletion for completed tasks.
-			   Alternatively, you can apply the same confirmation dialog logic as above. -->
-		  <form method="POST" action="?/delete" use:enhance={toggleTodo}>
-			<input type="hidden" name="id" value={todo.task_id} />
+
+		  <!-- Use a button that triggers our confirmation dialog instead of immediately deleting -->
+		  <div>
 			<button
-			  type="submit"
+			  type="button"
 			  class="rounded bg-red-500 px-3 py-1 text-white hover:bg-red-600 focus:outline-none"
 			  aria-label="Delete task"
+			  on:click={() => confirmDeleteTask(todo.task_id.toString(), todo.task_name)}
 			>
 			  ❌
 			</button>
-		  </form>
+		  </div>
 		</li>
 	  {/each}
 	</ul>
   
-	{#if data.todos.length === 0}
+	{#if todos.length === 0}
 	  <p class="mt-4 text-center text-gray-500">No tasks yet. Add one above!</p>
 	{/if}
   
