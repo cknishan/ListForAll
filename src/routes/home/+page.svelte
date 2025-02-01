@@ -1,10 +1,15 @@
+<!-- src/routes/home/+page.svelte -->
 <script lang="ts">
 	export let data; // Loaded server data (todos)
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
+	import ConfirmationDialog from '../../components/ConfirmationDialog.svelte'; // Import custom confirmation dialog
 
 	let loading = false;
 	let errorMessage: string | null = null; // To display error messages from the server
+	let showConfirmDialog = false; // Controls visibility of the confirmation dialog
+	let confirmMessage = ''; // Message displayed in the confirmation dialog
+	let taskToDelete: string | null = null; // ID of the category to delete
 
 	const handleError = async (res: Response | undefined) => {
 		// Ensure res is defined and not success status
@@ -47,10 +52,18 @@
 	};
 
 	function handleToggle(taskId: number) {
-		const form = document.querySelector(`form input[name="id"][value="${taskId}"]`)?.closest('form') as HTMLFormElement;
+		const form = document
+			.querySelector(`form input[name="id"][value="${taskId}"]`)
+			?.closest('form') as HTMLFormElement;
 		if (form) {
 			form.requestSubmit();
 		}
+	}
+
+	function confirmDeleteTask(taskId: string, taskName: string) {
+		taskToDelete = taskId;
+		confirmMessage = `Are you sure you want to delete the task "${taskName}"? This action cannot be undone.`;
+		showConfirmDialog = true;
 	}
 </script>
 
@@ -87,7 +100,7 @@
 	<!-- Pending Tasks -->
 	<h2 class="mt-4 text-xl font-semibold">Pending Tasks</h2>
 	<ul class="space-y-4">
-		{#each data.todos.filter(todo => !todo.completed) as todo (todo.task_id)}
+		{#each data.todos.filter((todo) => !todo.completed) as todo (todo.task_id)}
 			<li class="flex items-center justify-between rounded bg-gray-100 p-3">
 				<div class="flex items-center gap-2">
 					<form method="POST" action="?/toggle" use:enhance={toggleTodo}>
@@ -104,16 +117,17 @@
 					</span>
 				</div>
 
-				<form method="POST" action="?/delete" use:enhance={toggleTodo}>
+				<div>
 					<input type="hidden" name="id" value={todo.task_id} />
 					<button
 						type="submit"
 						class="rounded bg-red-500 px-3 py-1 text-white hover:bg-red-600 focus:outline-none"
 						aria-label="Delete task"
+						on:click={() => confirmDeleteTask(todo.todo_id, todo.todo_name)}
 					>
 						❌
 					</button>
-				</form>
+				</div>
 			</li>
 		{/each}
 	</ul>
@@ -121,7 +135,7 @@
 	<!-- Completed Tasks -->
 	<h2 class="mt-8 text-xl font-semibold">Completed Tasks</h2>
 	<ul class="space-y-4">
-		{#each data.todos.filter(todo => todo.completed) as todo (todo.task_id)}
+		{#each data.todos.filter((todo) => todo.completed) as todo (todo.task_id)}
 			<li class="flex items-center justify-between rounded bg-gray-100 p-3">
 				<div class="flex items-center gap-2">
 					<form method="POST" action="?/toggle" use:enhance={toggleTodo}>
@@ -155,4 +169,16 @@
 	{#if data.todos.length === 0}
 		<p class="mt-4 text-center text-gray-500">No tasks yet. Add one above!</p>
 	{/if}
+
+	<!-- Confirmation Dialog -->
+
+	<ConfirmationDialog
+		bind:show={showConfirmDialog}
+		message={confirmMessage}
+		onConfirm={}
+		onCancel={() => {
+			showConfirmDialog = false;
+			taskToDelete = null;
+		}}
+	/>
 </section>

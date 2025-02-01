@@ -257,7 +257,7 @@
 		<slot />
 	</main>
 
-	<!-- Confirmation Dialog
+	<!-- Confirmation Dialog -->
 	{#if session}
 		<ConfirmationDialog
 			bind:show={showConfirmDialog}
@@ -268,5 +268,5 @@
 				categoryToDelete = null;
 			}}
 		/>
-	{/if} -->
+	{/if} 
 </div>
