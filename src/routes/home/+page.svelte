@@ -1,4 +1,4 @@
-<!--  -->
+<!-- src/routes/home/+page.svelte -->
 <script lang="ts">
 	export let data; // Loaded server data (todos)
   
