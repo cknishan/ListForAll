@@ -12,7 +12,7 @@ export default {
 				'theme-bg-medium': '#475569'
 			  },
 			  fontFamily: {
-				body: ['Nunito']
+				sans: ['"Funnel Sans"', 'sans-serif'],
 			  }
 		}
 	},

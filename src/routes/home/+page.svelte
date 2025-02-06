@@ -131,7 +131,7 @@
   </svelte:head>
   
   <section class="mx-auto max-w-2xl p-4">
-	<h1 class="mb-6 text-center text-2xl font-bold">To-Do List</h1>
+	<h1 class="mb-6 text-center text-2xl font-bold text-theme-primary">All Tasks</h1>
   
 	<!-- Add Task Form -->
 	<form method="POST" action="?/add" use:enhance={addTodo} class="mb-4 flex gap-2">
@@ -144,10 +144,10 @@
 	  />
 	  <button
 		type="submit"
-		class="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:outline-none"
+		class="rounded font-bold bg-theme-primary px-4 py-2 text-white hover:opacity-90 focus:outline-none"
 		disabled={loading}
 	  >
-		Add Task
+		+
 	  </button>
 	</form>
   
@@ -157,7 +157,7 @@
 	{/if}
   
 	<!-- Pending Tasks -->
-	<h2 class="mt-4 text-xl font-semibold">Pending Tasks</h2>
+	<h2 class="my-4 text-xl font-semibold">Pending Tasks</h2>
 	<ul class="space-y-4">
 	  {#each todos.filter((todo) => !todo.completed) as todo (todo.task_id)}
 		<li class="flex items-center justify-between rounded bg-gray-100 p-3">
@@ -184,7 +184,7 @@
 			  aria-label="Delete task"
 			  on:click={() => confirmDeleteTask(todo.task_id.toString(), todo.task_name)}
 			>
-			  ❌
+			  X
 			</button>
 		  </div>
 		</li>
@@ -192,7 +192,7 @@
 	</ul>
   
 	<!-- Completed Tasks -->
-	<h2 class="mt-8 text-xl font-semibold">Completed Tasks</h2>
+	<h2 class="my-8 text-xl font-semibold">Completed Tasks</h2>
 	<ul class="space-y-4">
 	  {#each todos.filter((todo) => todo.completed) as todo (todo.task_id)}
 		<li class="flex items-center justify-between rounded bg-gray-100 p-3">
@@ -219,7 +219,7 @@
 			  aria-label="Delete task"
 			  on:click={() => confirmDeleteTask(todo.task_id.toString(), todo.task_name)}
 			>
-			  ❌
+			  X
 			</button>
 		  </div>
 		</li>

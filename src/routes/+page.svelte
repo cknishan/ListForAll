@@ -20,7 +20,7 @@
 	<title>User Management</title>
 </svelte:head>
 
-<div class="flex min-h-screen items-center justify-center bg-theme-bg-light px-4 sm:px-6 lg:px-8">
+<div class="flex h-screen items-center justify-center bg-theme-bg-light px-4 sm:px-6 lg:px-8">
 	<div class="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-md">
 		<div class="flex items-center justify-center space-x-2">
 			<img src="/logo.png" alt="Logo" class="h-10 w-10" />
