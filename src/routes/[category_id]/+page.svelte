@@ -89,7 +89,7 @@
 </script>
 
 <section class="mx-auto max-w-2xl p-4">
-	<h1 class="text-2xl font-bold mb-6 text-center">Tasks for {data.category.category_name}</h1>
+	<h1 class="text-2xl font-bold mb-6 text-center text-theme-bg-dark">Tasks for {data.category.category_name}</h1>
 	
 	<!-- Add Task Form -->
 	<form method="POST" action="?/add" use:enhance={addTask} class="mb-4 flex gap-2">
@@ -100,8 +100,8 @@
 			required
 			class="flex-grow rounded border px-3 py-2 focus:ring focus:ring-blue-300"
 		/>
-		<button type="submit" class="rounded bg-blue-500 px-4 py-2 text-white" disabled={loading}>
-			Add Task
+		<button type="submit" class="rounded text-theme-bg-dark bg-theme-primary px-4 py-2 font-bold" disabled={loading}>
+			+
 		</button>
 	</form>
 	
@@ -132,10 +132,10 @@
 				<!-- Delete Button -->
 				<button
 					type="button"
-					class="rounded bg-red-500 px-3 py-1 text-white hover:bg-red-600 focus:outline-none"
+					class="rounded bg-red-500 font-bold px-3 py-1 text-white hover:bg-red-600 focus:outline-none"
 					on:click={() => confirmDeleteTask(task.task_id.toString(), task.task_name)}
 				>
-					❌
+					x
 				</button>
 			</li>
 		{/each}
@@ -166,7 +166,7 @@
 					class="rounded bg-red-500 px-3 py-1 text-white hover:bg-red-600 focus:outline-none"
 					on:click={() => confirmDeleteTask(task.task_id.toString(), task.task_name)}
 				>
-					❌
+					x
 				</button>
 			</li>
 		{/each}

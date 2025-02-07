@@ -131,7 +131,7 @@
   </svelte:head>
   
   <section class="mx-auto max-w-2xl p-4">
-	<h1 class="mb-6 text-center text-2xl font-bold text-theme-primary">All Tasks</h1>
+	<h1 class="mb-6 text-center text-2xl font-bold text-theme-bg-dark">All Tasks</h1>
   
 	<!-- Add Task Form -->
 	<form method="POST" action="?/add" use:enhance={addTodo} class="mb-4 flex gap-2">
@@ -144,7 +144,7 @@
 	  />
 	  <button
 		type="submit"
-		class="rounded font-bold bg-theme-primary px-4 py-2 text-white hover:opacity-90 focus:outline-none"
+		class="rounded font-bold text-theme-bg-dark bg-theme-primary px-4 py-2 hover:opacity-90 focus:outline-none"
 		disabled={loading}
 	  >
 		+
@@ -184,7 +184,7 @@
 			  aria-label="Delete task"
 			  on:click={() => confirmDeleteTask(todo.task_id.toString(), todo.task_name)}
 			>
-			  X
+			  x
 			</button>
 		  </div>
 		</li>

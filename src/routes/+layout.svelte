@@ -5,6 +5,7 @@
 	import { invalidate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import ConfirmationDialog from '../components/ConfirmationDialog.svelte'; // Import custom confirmation dialog
+	import Icon from '@iconify/svelte';
 
 	export let data;
 
@@ -176,27 +177,31 @@
 <div class="flex max-h-screen">
 	<!-- Sidebar -->
 	{#if session}
-		<section>
-			<div class="flex items-center justify-center space-x-2 py-2">
-				<img src="/logo.png" alt="Logo" class="h-10 w-10" />
-				<h1 class="text-3xl font-bold text-gray-900">ListForAll</h1>
+		<section class="min-h-screen bg-theme-bg-dark">
+			<div class="fixed right-0 top-0 pt-2 pr-4 pl-6 pb-4 z-50 bg-theme-bg-dark text-theme-primary md:hidden rounded-bl-full">
+				<button
+					
+					on:click={() => (sidebarOpen = !sidebarOpen)}
+				>
+					{#if sidebarOpen}
+						<Icon icon="mdi:close" class="h-6 w-6" /> <!-- Close Icon -->
+					{:else}
+						<Icon icon="mdi:menu" class="h-6 w-6" /> <!-- Hamburger Icon -->
+					{/if}
+				</button>
 			</div>
-			<button
-				class="fixed right-4 top-4 z-50 rounded-md bg-theme-primary p-2 text-white md:hidden"
-				on:click={() => (sidebarOpen = !sidebarOpen)}
-			>
-				{#if sidebarOpen}
-					&times; <!-- Close Icon -->
-				{:else}
-					&#9776; <!-- Hamburger Icon -->
-				{/if}
-			</button>
 
 			<!-- Sidebar Navigation -->
 			<nav
 				class="w-64 transform border-r border-gray-200 p-4 transition-transform duration-300 ease-in-out max-md:fixed max-md:inset-y-0 max-md:left-0
-			{sidebarOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col md:translate-x-0"
+			{sidebarOpen
+					? 'translate-x-0'
+					: '-translate-x-full'} flex min-h-screen flex-col bg-theme-bg-dark md:translate-x-0"
 			>
+				<div class="flex items-center justify-center space-x-2 py-2">
+					<img src="/logo.png" alt="Logo" class="h-10 w-10" />
+					<h1 class="text-3xl font-bold text-theme-primary">ListForAll</h1>
+				</div>
 				<!-- New Category Input -->
 				<div class="mb-4">
 					<input
@@ -205,8 +210,11 @@
 						bind:value={newCategory}
 						class="w-full rounded border px-3 py-2 focus:outline-none focus:ring"
 					/>
-					<button on:click={addCategory} class="mt-2 w-full rounded bg-blue-500 py-2 text-white">
-						➕ Add List
+					<button
+						on:click={addCategory}
+						class="mt-2 w-full rounded bg-theme-primary px-4 py-2 text-white"
+					>
+						+ Add List
 					</button>
 					<!-- Display Error Message -->
 					{#if errorMessage}
@@ -215,30 +223,35 @@
 				</div>
 
 				<!-- Category List (Fixed height & Scrollable) -->
-				<ul class="h-64 overflow-y-auto rounded-md border border-gray-200 p-2">
+				<ul class="h-64 overflow-y-auto rounded-md border border-l-2 border-theme-primary p-2">
 					<li>
-						<a href="/" class="block rounded px-3 py-2 hover:bg-gray-200">All Tasks</a>
+						<a
+							href="/"
+							class="block rounded px-3 py-2 font-bold text-theme-primary hover:bg-gray-200"
+							>All Tasks</a
+						>
 					</li>
 					{#each categories as category}
-						<li class="group flex items-center justify-between">
-							<a href="/{category.category_id}" class="block rounded px-3 py-2 hover:bg-gray-200">
-								{category.category_name}
+						<li>
+							<a
+								href="/{category.category_id}"
+								class="block flex w-full justify-between rounded px-3 py-2 hover:bg-gray-200"
+							>
+								<p class="text-theme-primary">{category.category_name}</p>
+
+								<div class="flex space-x-2">
+									<button class="text-blue-500" on:click={() => enableEditMode(category)}>
+										<Icon icon="mdi:pencil" class="h-5 w-5" />
+									</button>
+									<button
+										class="text-red-500"
+										on:click={() =>
+											confirmDeleteCategory(category.category_id, category.category_name)}
+									>
+										<Icon icon="mdi:trash-can" class="h-5 w-5" />
+									</button>
+								</div>
 							</a>
-							<div class="hidden space-x-2 group-hover:flex">
-								<button
-									class="text-blue-500 hover:text-blue-700"
-									on:click={() => enableEditMode(category)}
-								>
-									✏️
-								</button>
-								<button
-									class="text-red-500 hover:text-red-700"
-									on:click={() =>
-										confirmDeleteCategory(category.category_id, category.category_name)}
-								>
-									🗑️
-								</button>
-							</div>
 						</li>
 					{/each}
 				</ul>
@@ -251,18 +264,21 @@
 
 				<!-- Edit Category -->
 				{#if editMode && editedCategory}
-					<div class="mt-4">
-						<h3 class="text-lg font-semibold">Edit Category</h3>
+					<div class="mt-4 text-white">
+						<h3>Edit Category</h3>
 						<input
 							type="text"
 							bind:value={editedCategory.name}
-							class="mt-2 w-full rounded border px-3 py-2 focus:outline-none focus:ring"
+							class="mt-2 w-full rounded border px-3 py-2 text-theme-bg-dark focus:outline-none focus:ring"
 						/>
 						<div class="mt-2 flex justify-between">
-							<button class="rounded bg-blue-500 px-4 py-2 text-white" on:click={updateCategory}>
+							<button
+								class="rounded bg-theme-primary px-2 py-2 text-white"
+								on:click={updateCategory}
+							>
 								Update
 							</button>
-							<button class="rounded bg-gray-300 px-4 py-2 text-gray-700" on:click={cancelEditMode}>
+							<button class="rounded bg-gray-300 px-2 py-2 text-gray-700" on:click={cancelEditMode}>
 								Cancel
 							</button>
 						</div>
