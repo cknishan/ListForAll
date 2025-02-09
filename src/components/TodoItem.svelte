@@ -27,7 +27,7 @@
   
   <li class="flex items-center justify-between rounded bg-gray-100 p-3">
     <div class="flex items-center gap-2">
-      <form method="POST" action="?/toggle" class="flex align-middle">
+      <form method="POST" action="?/toggle" class="flex align-middle" use:enhance>
         <input type="hidden" name="id" value={todo.task_id} />
         <input
           type="checkbox"
