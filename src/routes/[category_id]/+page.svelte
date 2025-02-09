@@ -6,6 +6,7 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { invalidate } from '$app/navigation';
 	import ConfirmationDialog from '../../components/ConfirmationDialog.svelte';
+	import TodoItem from '../../components//TodoItem.svelte';
 
 	let loading = false;
 	let errorMessage: string | null = null;
@@ -125,34 +126,8 @@
 	<h2 class="text-xl font-semibold">Pending Tasks</h2>
 	<ul class="space-y-4">
 		{#each todos.filter((task) => !task.completed) as task}
-			<li class="flex items-center justify-between rounded bg-gray-100 p-3">
-				<div class="flex items-center gap-2">
-					<!-- Toggle Task -->
-					<form method="POST" action="?/toggle" use:enhance={toggleTask}>
-						<input type="hidden" name="id" value={task.task_id} />
-						<input
-							type="checkbox"
-							checked={task.completed}
-							on:change={() =>
-								document
-									.querySelector(`form input[name="id"][value="${task.task_id}"]`)
-									?.closest('form')
-									?.requestSubmit()}
-							class="h-5 w-5 text-blue-500 focus:ring focus:ring-blue-300"
-						/>
-					</form>
-					<span>{task.task_name}</span>
-				</div>
-
-				<!-- Delete Button -->
-				<button
-					type="button"
-					class="rounded bg-red-500 px-3 py-1 font-bold text-white hover:bg-red-600 focus:outline-none"
-					on:click={() => confirmDeleteTask(task.task_id.toString(), task.task_name)}
-				>
-					x
-				</button>
-			</li>
+			{console.log(task)}
+			<TodoItem todo={task} toggleTodo={toggleTask} {confirmDeleteTask} />
 		{/each}
 	</ul>
 
@@ -160,34 +135,7 @@
 	<h2 class="mt-4 text-xl font-semibold">Completed Tasks</h2>
 	<ul class="space-y-4">
 		{#each todos.filter((task) => task.completed) as task}
-			<li class="flex items-center justify-between rounded bg-gray-100 p-3">
-				<div class="flex items-center gap-2">
-					<!-- Toggle Task -->
-					<form method="POST" action="?/toggle" use:enhance={toggleTask}>
-						<input type="hidden" name="id" value={task.task_id} />
-						<input
-							type="checkbox"
-							checked={task.completed}
-							on:change={() =>
-								document
-									.querySelector(`form input[name="id"][value="${task.task_id}"]`)
-									?.closest('form')
-									?.requestSubmit()}
-							class="h-5 w-5 text-blue-500 focus:ring focus:ring-blue-300"
-						/>
-					</form>
-					<span class="line-through">{task.task_name}</span>
-				</div>
-
-				<!-- Delete Button -->
-				<button
-					type="button"
-					class="rounded bg-red-500 px-3 py-1 text-white hover:bg-red-600 focus:outline-none"
-					on:click={() => confirmDeleteTask(task.task_id.toString(), task.task_name)}
-				>
-					x
-				</button>
-			</li>
+			<TodoItem todo={task} toggleTodo={toggleTask} {confirmDeleteTask} />
 		{/each}
 	</ul>
 
