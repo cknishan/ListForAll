@@ -235,7 +235,7 @@
 						<li>
 							<a
 								href="/{category.category_id}"
-								class="block flex w-full justify-between rounded px-3 py-2 hover:bg-gray-200"
+								class=" flex w-full justify-between rounded px-3 py-2 hover:bg-gray-200"
 							>
 								<p class="text-theme-primary">{category.category_name}</p>
 

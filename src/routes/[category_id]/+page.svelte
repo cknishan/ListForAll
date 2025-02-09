@@ -13,6 +13,11 @@
 	// Create a local reactive variable to store tasks
 	let todos = data.tasks;
 
+	// Watch for changes using reactive
+	$: {
+		todos = data.tasks;
+	}
+
 	let showConfirmDialog = false;
 	let confirmMessage = '';
 	let taskToDelete: string | null = null;
@@ -89,8 +94,10 @@
 </script>
 
 <section class="mx-auto max-w-2xl p-4">
-	<h1 class="text-2xl font-bold mb-6 text-center text-theme-bg-dark">Tasks for {data.category.category_name}</h1>
-	
+	<h1 class="mb-6 text-center text-2xl font-bold text-theme-bg-dark">
+		Tasks for {data.category.category_name}
+	</h1>
+
 	<!-- Add Task Form -->
 	<form method="POST" action="?/add" use:enhance={addTask} class="mb-4 flex gap-2">
 		<input
@@ -100,20 +107,24 @@
 			required
 			class="flex-grow rounded border px-3 py-2 focus:ring focus:ring-blue-300"
 		/>
-		<button type="submit" class="rounded text-theme-bg-dark bg-theme-primary px-4 py-2 font-bold" disabled={loading}>
+		<button
+			type="submit"
+			class="rounded bg-theme-primary px-4 py-2 font-bold text-theme-bg-dark"
+			disabled={loading}
+		>
 			+
 		</button>
 	</form>
-	
+
 	<!-- Error Message -->
 	{#if errorMessage}
-		<p class="text-red-600 text-sm mb-4">{errorMessage}</p>
+		<p class="mb-4 text-sm text-red-600">{errorMessage}</p>
 	{/if}
-	
+
 	<!-- Pending Tasks -->
 	<h2 class="text-xl font-semibold">Pending Tasks</h2>
 	<ul class="space-y-4">
-		{#each todos.filter(task => !task.completed) as task}
+		{#each todos.filter((task) => !task.completed) as task}
 			<li class="flex items-center justify-between rounded bg-gray-100 p-3">
 				<div class="flex items-center gap-2">
 					<!-- Toggle Task -->
@@ -122,17 +133,21 @@
 						<input
 							type="checkbox"
 							checked={task.completed}
-							on:change={() => document.querySelector(`form input[name="id"][value="${task.task_id}"]`)?.closest('form')?.requestSubmit()}
+							on:change={() =>
+								document
+									.querySelector(`form input[name="id"][value="${task.task_id}"]`)
+									?.closest('form')
+									?.requestSubmit()}
 							class="h-5 w-5 text-blue-500 focus:ring focus:ring-blue-300"
 						/>
 					</form>
 					<span>{task.task_name}</span>
 				</div>
-	
+
 				<!-- Delete Button -->
 				<button
 					type="button"
-					class="rounded bg-red-500 font-bold px-3 py-1 text-white hover:bg-red-600 focus:outline-none"
+					class="rounded bg-red-500 px-3 py-1 font-bold text-white hover:bg-red-600 focus:outline-none"
 					on:click={() => confirmDeleteTask(task.task_id.toString(), task.task_name)}
 				>
 					x
@@ -140,11 +155,11 @@
 			</li>
 		{/each}
 	</ul>
-	
+
 	<!-- Completed Tasks -->
-	<h2 class="text-xl font-semibold mt-4">Completed Tasks</h2>
+	<h2 class="mt-4 text-xl font-semibold">Completed Tasks</h2>
 	<ul class="space-y-4">
-		{#each todos.filter(task => task.completed) as task}
+		{#each todos.filter((task) => task.completed) as task}
 			<li class="flex items-center justify-between rounded bg-gray-100 p-3">
 				<div class="flex items-center gap-2">
 					<!-- Toggle Task -->
@@ -153,13 +168,17 @@
 						<input
 							type="checkbox"
 							checked={task.completed}
-							on:change={() => document.querySelector(`form input[name="id"][value="${task.task_id}"]`)?.closest('form')?.requestSubmit()}
+							on:change={() =>
+								document
+									.querySelector(`form input[name="id"][value="${task.task_id}"]`)
+									?.closest('form')
+									?.requestSubmit()}
 							class="h-5 w-5 text-blue-500 focus:ring focus:ring-blue-300"
 						/>
 					</form>
 					<span class="line-through">{task.task_name}</span>
 				</div>
-	
+
 				<!-- Delete Button -->
 				<button
 					type="button"
@@ -171,7 +190,7 @@
 			</li>
 		{/each}
 	</ul>
-	
+
 	<!-- Confirmation Dialog -->
 	{#if showConfirmDialog}
 		<ConfirmationDialog
@@ -185,4 +204,3 @@
 		/>
 	{/if}
 </section>
-
