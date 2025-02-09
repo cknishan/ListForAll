@@ -1,7 +1,6 @@
 <!-- src/components/TodoItem.svelte -->
 <script lang="ts">
     import { enhance } from '$app/forms';
-    import type { SubmitFunction } from '@sveltejs/kit';
   
     export let todo: {
       task_id: number;
@@ -12,7 +11,6 @@
       user_id: string; // Add user_id field
     };
   
-    export let toggleTodo: SubmitFunction;
     export let confirmDeleteTask: (taskId: string, taskName: string) => void;
 
         // Handle toggling a task from a checkbox change:
@@ -29,7 +27,7 @@
   
   <li class="flex items-center justify-between rounded bg-gray-100 p-3">
     <div class="flex items-center gap-2">
-      <form method="POST" action="?/toggle" use:enhance={toggleTodo} class="flex align-middle">
+      <form method="POST" action="?/toggle" class="flex align-middle">
         <input type="hidden" name="id" value={todo.task_id} />
         <input
           type="checkbox"
