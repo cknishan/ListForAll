@@ -1,38 +1,26 @@
-# sv
+# ListForAll
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+[Website link](https://listforall.netlify.app/)
 
-## Creating a project
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Description
 
-```bash
-# create a new project in the current directory
-npx sv create
+ListForAll is a minimalist progressive web application designed to help general users organize their tasks with ease. With its focus on simplicity and accessibility, it enables users to create and manage categorized task lists effortlessly. As a progressive web app, ListForAll can be easily installed on any device, offering a streamlined and distraction-free task management experience. Currently in its MVP stage, ListForAll is a foundation for future improvements, with exciting features coming in the future.
 
-# create a new project in my-app
-npx sv create my-app
-```
+---
 
-## Developing
+## Features
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+- **User Authentication**: Secure signup/login functionality using Supabase's authentication services.
+- **CRUD Operations**: Add, edit, mark as complete, and delete tasks with real-time updates.
+- **Responsive Design**: Tailored for both desktop and mobile devices using TailwindCSS.
+- **Real-Time Updates**: Supabase's real-time database ensures instant task updates for all users.
 
-```bash
-npm run dev
+---
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+## Tech Stack
 
-## Building
+- **SvelteKit**: Frontend framework for a reactive and fast user interface.
+- **Supabase**: Backend-as-a-Service providing authentication and database functionality.
+- **TailwindCSS**: Utility-first CSS framework for styling the application.
 
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
