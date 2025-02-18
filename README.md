@@ -2,7 +2,7 @@
 
 [Website link](https://listforall.netlify.app/)
 
-
+Tackle Your To-Dos, Keep It Simple
 ## Description
 
 ListForAll is a minimalist progressive web application designed to help general users organize their tasks with ease. With its focus on simplicity and accessibility, it enables users to create and manage categorized task lists effortlessly. As a progressive web app, ListForAll can be easily installed on any device, offering a streamlined and distraction-free task management experience. Currently in its MVP stage, ListForAll is a foundation for future improvements, with exciting features coming in the future.
