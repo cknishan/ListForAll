@@ -256,9 +256,12 @@
 					{/each}
 				</ul>
 				<!-- Settings -->
-				<div>
-					<a href="/account" class="block rounded bg-gray-200 px-3 py-2 hover:bg-gray-300">
+				<div class="rounded bg-gray-200">
+					<a href="/account" class="block px-3 py-2 hover:bg-gray-300">
 						⚙️ Account and Settings
+					</a>
+					<a href="/about" class="block px-3 py-2 hover:bg-gray-300">
+						About
 					</a>
 				</div>
 
