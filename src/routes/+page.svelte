@@ -52,6 +52,7 @@
 				{#if form?.errors?.email}
 					<span class="mt-2 text-sm text-red-600">{form?.errors?.email}</span>
 				{/if}
+
 			</div>
 
 			<div>
@@ -62,6 +63,13 @@
 					{loading ? 'Loading...' : 'Send magic link'}
 				</button>
 			</div>
+			
+			<div>
+				<a href="/about" class="text-sm font-medium text-blue-500 hover:underline">
+					Learn More
+				</a>
+			</div>
+			
 		</form>
 	</div>
 </div>
