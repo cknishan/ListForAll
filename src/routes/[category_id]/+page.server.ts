@@ -6,7 +6,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession 
 	const { session } = await safeGetSession();
 
 	if (!session) {
-		throw redirect(303, '/');
+		return fail(401, { error: 'Unauthorized' });
 	}
 
 	const { category_id } = params;
@@ -78,7 +78,7 @@ export const actions: Actions = {
 			return fail(500, { error: 'Failed to check for duplicates' });
 		}
 
-		if (existingTasks?.some(task => task.task_name.toLowerCase() === content.toLowerCase())) {
+		if (existingTasks?.some((task) => task.task_name.toLowerCase() === content.toLowerCase())) {
 			return fail(400, { error: 'Task already exists in this category' });
 		}
 
