@@ -5,13 +5,18 @@
 	import { Plus } from 'lucide-svelte';
 
 	export let data;
-	let todos = [...data.tasks];
+	let todos:any = [];
+	$: if (data) {
+	todos = [...data.tasks];
+	loading = false;
+	errorMessage = null;
+}
+
 	let loading = false;
 	let errorMessage: string | null = null;
 	let showConfirmDialog = false;
 	let confirmMessage = '';
 	let taskToDelete: string | null = null;
-	let newTaskContent = '';
 
 	function confirmDeleteTask(taskId: string, taskName: string) {
 		taskToDelete = taskId;
