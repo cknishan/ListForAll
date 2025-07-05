@@ -20,7 +20,7 @@
 
 	async function toggleTask(taskId: number) {
 		errorMessage = null;
-		todos = todos.map(task =>
+		todos = todos.map((task) =>
 			task.task_id === taskId ? { ...task, completed: !task.completed } : task
 		);
 
@@ -33,7 +33,7 @@
 		});
 
 		if (!res.ok) {
-			todos = todos.map(task =>
+			todos = todos.map((task) =>
 				task.task_id === taskId ? { ...task, completed: !task.completed } : task
 			);
 			const errorData = await res.json();
@@ -45,9 +45,8 @@
 		if (!taskToDelete) return;
 		loading = true;
 
-		const index = todos.findIndex(t => t.task_id.toString() === taskToDelete);
-		const backup = todos[index];
-		todos.splice(index, 1);
+		const backup = todos.find((t) => t.task_id.toString() === taskToDelete);
+		todos = todos.filter((t) => t.task_id.toString() !== taskToDelete); // optimistic delete
 
 		const formData = new FormData();
 		formData.set('id', taskToDelete);
@@ -57,8 +56,8 @@
 			body: formData
 		});
 
-		if (!res.ok) {
-			todos.splice(index, 0, backup);
+		if (!res.ok && backup) {
+			todos = [backup, ...todos]; // rollback
 			const errorData = await res.json();
 			errorMessage = errorData.error || 'Failed to delete task';
 		}
@@ -92,25 +91,25 @@
 	</form>
 
 	{#if errorMessage}
-		<p class="text-sm text-red-600 mb-4">{errorMessage}</p>
+		<p class="mb-4 text-sm text-red-600">{errorMessage}</p>
 	{/if}
 
 	<h2 class="text-xl font-semibold">Pending Tasks</h2>
 	<ul class="space-y-4">
-		{#each todos.filter(task => !task.completed) as task (task.task_id)}
+		{#each todos.filter((task) => !task.completed) as task (task.task_id)}
 			<TodoItem todo={task} {confirmDeleteTask} toggleTask={() => toggleTask(task.task_id)} />
 		{/each}
 	</ul>
 
 	<h2 class="mt-4 text-xl font-semibold">Completed Tasks</h2>
 	<ul class="space-y-4">
-		{#each todos.filter(task => task.completed) as task (task.task_id)}
+		{#each todos.filter((task) => task.completed) as task (task.task_id)}
 			<TodoItem todo={task} {confirmDeleteTask} toggleTask={() => toggleTask(task.task_id)} />
 		{/each}
 	</ul>
 
 	{#if todos.length === 0}
-		<p class="text-center mt-4 text-gray-500">No tasks yet. Add one above!</p>
+		<p class="mt-4 text-center text-gray-500">No tasks yet. Add one above!</p>
 	{/if}
 
 	{#if showConfirmDialog}
