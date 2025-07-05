@@ -6,7 +6,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession 
 	const { session } = await safeGetSession();
 
 	if (!session) {
-		throw redirect(303, '/');
+		return fail(401, { error: 'Unauthorized' });
 	}
 
 	const { category_id } = params;
@@ -78,7 +78,7 @@ export const actions: Actions = {
 			return fail(500, { error: 'Failed to check for duplicates' });
 		}
 
-		if (existingTasks?.some(task => task.task_name.toLowerCase() === content.toLowerCase())) {
+		if (existingTasks?.some((task) => task.task_name.toLowerCase() === content.toLowerCase())) {
 			return fail(400, { error: 'Task already exists in this category' });
 		}
 
@@ -102,35 +102,27 @@ export const actions: Actions = {
 
 	toggle: async ({ request, locals: { supabase, safeGetSession } }) => {
 		const { session } = await safeGetSession();
-
-		if (!session) {
-			throw redirect(303, '/');
-		}
+		if (!session) return fail(401, { error: 'Unauthorized' });
 
 		const formData = await request.formData();
 		const id = formData.get('id')?.toString();
+		if (!id) return fail(400, { error: 'Missing ID' });
 
-		// Ensure the task belongs to the user
-		const { data: task, error: fetchError } = await supabase
+		const { data: task, error } = await supabase
 			.from('task')
-			.select('completed, user_id')
+			.select('completed')
 			.eq('task_id', id)
 			.eq('user_id', session.user.id)
 			.single();
 
-		if (fetchError || !task) {
-			return fail(404, { error: 'Task not found or unauthorized' });
-		}
+		if (error || !task) return fail(404, { error: 'Task not found or unauthorized' });
 
-		// Toggle the task's completion status
 		const { error: updateError } = await supabase
 			.from('task')
 			.update({ completed: !task.completed })
 			.eq('task_id', id);
 
-		if (updateError) {
-			return fail(500, { error: 'Failed to toggle task' });
-		}
+		if (updateError) return fail(500, { error: 'Toggle failed' });
 
 		return { success: true };
 	},
