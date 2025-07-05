@@ -1,8 +1,8 @@
 <!-- src/routes/[category_id]/+page.svelte -->
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import ConfirmationDialog from '../../components/ConfirmationDialog.svelte';
 	import TodoItem from '../../components/TodoItem.svelte';
+	import { Plus } from 'lucide-svelte';
 
 	export let data;
 	let todos = [...data.tasks];
@@ -11,6 +11,7 @@
 	let showConfirmDialog = false;
 	let confirmMessage = '';
 	let taskToDelete: string | null = null;
+	let newTaskContent = '';
 
 	function confirmDeleteTask(taskId: string, taskName: string) {
 		taskToDelete = taskId;
@@ -77,7 +78,7 @@
 		Tasks for {data.category.category_name}
 	</h1>
 
-	<form method="POST" action="?/add" use:enhance class="mb-4 flex gap-2">
+	<form method="POST" action="?/add" class="relative mb-4 flex gap-2">
 		<input
 			type="text"
 			name="content"
@@ -85,8 +86,27 @@
 			required
 			class="flex-grow rounded border border-gray-300 px-3 py-2"
 		/>
-		<button type="submit" class="rounded bg-theme-primary px-4 py-2 font-bold text-theme-bg-dark">
-			+
+		<button
+			type="submit"
+			class="rounded bg-theme-primary px-4 py-2 font-bold text-theme-bg-dark"
+			disabled={loading}
+		>
+			{#if loading}
+				<svg class="h-5 w-5 animate-spin text-white" viewBox="0 0 24 24">
+					<circle
+						class="opacity-25"
+						cx="12"
+						cy="12"
+						r="10"
+						stroke="currentColor"
+						stroke-width="4"
+						fill="none"
+					></circle>
+					<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+				</svg>
+			{:else}
+				<Plus class="h-5 w-5 text-white" />
+			{/if}
 		</button>
 	</form>
 
