@@ -3,23 +3,23 @@
 	import ConfirmationDialog from '../../components/ConfirmationDialog.svelte';
 	import TodoItem from '../../components/TodoItem.svelte';
 	import { Plus } from 'lucide-svelte';
-	import uuid4 from "uuid4";
+	import uuid4 from 'uuid4';
 
 	export let data;
-	
+
 	let loading = false;
 	let errorMessage: string | null = null;
 	let showConfirmDialog = false;
 	let confirmMessage = '';
 	let taskToDelete: string | null = null;
 	let newTaskContent = '';
-	
-	let todos:any = [];
+
+	let todos: any = [];
 	$: if (data) {
-	todos = [...data.tasks];
-	loading = false;
-	errorMessage = null;
-}
+		todos = [...data.tasks];
+		loading = false;
+		errorMessage = null;
+	}
 	function confirmDeleteTask(taskId: string, taskName: string) {
 		taskToDelete = taskId;
 		confirmMessage = `Are you sure you want to delete the task "${taskName}"? This action cannot be undone.`;
@@ -28,7 +28,7 @@
 
 	async function toggleTask(taskId: string) {
 		errorMessage = null;
-		todos = todos.map((task:any) =>
+		todos = todos.map((task: any) =>
 			task.task_id === taskId ? { ...task, completed: !task.completed } : task
 		);
 
@@ -41,7 +41,7 @@
 		});
 
 		if (!res.ok) {
-			todos = todos.map((task:any) =>
+			todos = todos.map((task: any) =>
 				task.task_id === taskId ? { ...task, completed: !task.completed } : task
 			);
 			const errorData = await res.json();
@@ -53,8 +53,8 @@
 		if (!taskToDelete) return;
 		loading = true;
 
-		const backup = todos.find((t:any) => t.task_id === taskToDelete);
-		todos = todos.filter((t:any) => t.task_id !== taskToDelete); // optimistic delete
+		const backup = todos.find((t: any) => t.task_id === taskToDelete);
+		todos = todos.filter((t: any) => t.task_id !== taskToDelete); // optimistic delete
 
 		const formData = new FormData();
 		formData.set('id', taskToDelete);
@@ -102,7 +102,7 @@
 		});
 
 		if (!res.ok) {
-			todos = todos.filter((t:any) => t.task_id !== taskId);
+			todos = todos.filter((t: any) => t.task_id !== taskId);
 			const errorData = await res.json();
 			errorMessage = errorData.error || 'Failed to add task';
 		}
@@ -160,14 +160,14 @@
 
 	<h2 class="text-xl font-semibold">Pending Tasks</h2>
 	<ul class="space-y-4">
-		{#each todos.filter((task:any) => !task.completed) as task (task.task_id)}
+		{#each todos.filter((task: any) => !task.completed) as task (task.task_id)}
 			<TodoItem todo={task} {confirmDeleteTask} toggleTask={() => toggleTask(task.task_id)} />
 		{/each}
 	</ul>
 
 	<h2 class="mt-4 text-xl font-semibold">Completed Tasks</h2>
 	<ul class="space-y-4">
-		{#each todos.filter((task:any) => task.completed) as task (task.task_id)}
+		{#each todos.filter((task: any) => task.completed) as task (task.task_id)}
 			<TodoItem todo={task} {confirmDeleteTask} toggleTask={() => toggleTask(task.task_id)} />
 		{/each}
 	</ul>
