@@ -39,6 +39,7 @@
 		"@supabase/ssr": "^0.5.2",
 		"@supabase/supabase-js": "^2.46.2",
 		"lucide-svelte": "^0.525.0",
-		"punycode": "^2.3.1"
+		"punycode": "^2.3.1",
+		"uuid4": "^2.0.3"
 	}
 }
