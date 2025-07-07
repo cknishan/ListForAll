@@ -10,7 +10,6 @@ export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession 
 		throw redirect(303, '/');
 	}
 
-	// Fetch tasks from Supabase
 	const { data: todos, error } = await supabase
 		.from('task')
 		.select('*')
@@ -27,45 +26,47 @@ export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession 
 export const actions: Actions = {
 	add: async ({ request, locals: { supabase, safeGetSession } }) => {
 		const { session } = await safeGetSession();
+
 		if (!session) {
 			throw redirect(303, '/');
 		}
 
 		const formData = await request.formData();
+		const id = formData.get('id')?.toString();
 		const content = formData.get('content')?.toString().trim();
 
-		if (!content || content.length === 0) {
-			return fail(400, { error: 'Task content cannot be empty or whitespace only' });
+		if (!id || !content || content.length === 0) {
+			return fail(400, { error: 'Missing task ID or content' });
 		}
 
-		// Check for duplicate tasks
 		const { data: existingTasks, error: fetchError } = await supabase
 			.from('task')
 			.select('task_name')
 			.eq('user_id', session.user.id);
 
 		if (fetchError) {
-			console.error('Error checking for duplicates:', fetchError);
 			return fail(500, { error: 'Failed to check for duplicates' });
 		}
 
-		if (existingTasks?.some((t) => t.task_name.toLowerCase() === content.toLowerCase())) {
+		if (existingTasks?.some((task) => task.task_name.toLowerCase() === content.toLowerCase())) {
 			return fail(400, { error: 'Task already exists' });
 		}
 
-		// Insert and return the new task
-		const { data, error } = await supabase
-			.from('task')
-			.insert([{ task_name: content, completed: false, user_id: session.user.id }])
-			.select()
-			.single();
+		const { error } = await supabase.from('task').insert([
+			{
+				task_id: id,
+				task_name: content,
+				completed: false,
+				user_id: session.user.id
+			}
+		]);
 
 		if (error) {
-			console.error('Error inserting task:', error);
+			console.error('Error adding task:', error);
 			return fail(500, { error: 'Failed to add task' });
 		}
 
-		return { success: true, task: data }; // 👈 return the new task with real ID
+		return { success: true };
 	},
 
 	toggle: async ({ request, locals: { supabase, safeGetSession } }) => {
@@ -75,24 +76,28 @@ export const actions: Actions = {
 		}
 
 		const formData = await request.formData();
-		const id = Number(formData.get('id'));
+		const id = formData.get('id')?.toString();
+		if (!id) {
+			return fail(400, { error: 'Missing task ID' });
+		}
 
-		// Fetch the current state of the task
-		const { data: todo, error: fetchError } = await supabase
+		const { data: task, error: fetchError } = await supabase
 			.from('task')
 			.select('completed')
 			.eq('task_id', id)
+			.eq('user_id', session.user.id)
 			.single();
 
-		if (fetchError || !todo) {
+		if (fetchError || !task) {
 			console.error('Error fetching task:', fetchError);
-			return fail(404, { error: 'Task not found' });
+			return fail(404, { error: 'Task not found or unauthorized' });
 		}
 
 		const { error: updateError } = await supabase
 			.from('task')
-			.update({ completed: !todo.completed })
-			.eq('task_id', id);
+			.update({ completed: !task.completed })
+			.eq('task_id', id)
+			.eq('user_id', session.user.id);
 
 		if (updateError) {
 			console.error('Error toggling task:', updateError);
@@ -109,9 +114,16 @@ export const actions: Actions = {
 		}
 
 		const formData = await request.formData();
-		const id = Number(formData.get('id'));
+		const id = formData.get('id')?.toString();
+		if (!id) {
+			return fail(400, { error: 'Missing task ID' });
+		}
 
-		const { error } = await supabase.from('task').delete().eq('task_id', id);
+		const { error } = await supabase
+			.from('task')
+			.delete()
+			.eq('task_id', id)
+			.eq('user_id', session.user.id);
 
 		if (error) {
 			console.error('Error deleting task:', error);

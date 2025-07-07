@@ -39,7 +39,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession 
 };
 
 export const actions: Actions = {
-	add: async ({ request, locals: { supabase, safeGetSession }, params }) => {
+add: async ({ request, locals: { supabase, safeGetSession }, params }) => {
 		const { session } = await safeGetSession();
 
 		if (!session) {
@@ -61,10 +61,11 @@ export const actions: Actions = {
 		}
 
 		const formData = await request.formData();
+		const id = formData.get('id')?.toString();
 		const content = formData.get('content')?.toString().trim();
 
-		if (!content || content.length === 0) {
-			return fail(400, { error: 'Task content cannot be empty or whitespace only' });
+		if (!id || !content || content.length === 0) {
+			return fail(400, { error: 'Missing task ID or content' });
 		}
 
 		// Check for duplicate tasks (case-insensitive) in this category
@@ -82,9 +83,10 @@ export const actions: Actions = {
 			return fail(400, { error: 'Task already exists in this category' });
 		}
 
-		// Insert the new task
+		// Insert the new task using the provided UUID
 		const { error } = await supabase.from('task').insert([
 			{
+				task_id: id,
 				task_name: content,
 				completed: false,
 				category_id: category_id,
