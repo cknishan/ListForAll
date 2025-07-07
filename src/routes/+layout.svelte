@@ -178,11 +178,10 @@
 	<!-- Sidebar -->
 	{#if session}
 		<section class="min-h-screen bg-theme-bg-dark">
-			<div class="fixed right-0 top-0 pt-2 pr-4 pl-6 pb-4 z-50 bg-theme-bg-dark text-theme-primary md:hidden rounded-bl-full">
-				<button
-					
-					on:click={() => (sidebarOpen = !sidebarOpen)}
-				>
+			<div
+				class="fixed right-0 top-0 z-50 rounded-bl-full bg-theme-bg-dark pb-4 pl-6 pr-4 pt-2 text-theme-primary md:hidden"
+			>
+				<button on:click={() => (sidebarOpen = !sidebarOpen)}>
 					{#if sidebarOpen}
 						<Icon icon="mdi:close" class="h-6 w-6" /> <!-- Close Icon -->
 					{:else}
@@ -193,76 +192,74 @@
 
 			<!-- Sidebar Navigation -->
 			<nav
-				class="w-64 transform border-r border-gray-200 p-4 transition-transform duration-300 ease-in-out max-md:fixed max-md:inset-y-0 max-md:left-0
+				class="w-64 transform p-4 transition-transform duration-300 ease-in-out max-md:fixed max-md:inset-y-0 max-md:left-0
 			{sidebarOpen
 					? 'translate-x-0'
 					: '-translate-x-full'} flex min-h-screen flex-col bg-theme-bg-dark md:translate-x-0"
 			>
-				<div class="flex items-center justify-center space-x-2 py-2">
-					<img src="/logo.png" alt="Logo" class="h-10 w-10" />
-					<h1 class="text-3xl font-bold text-theme-primary">ListForAll</h1>
-				</div>
-				<!-- New Category Input -->
-				<div class="mb-4">
-					<input
-						type="text"
-						placeholder="New list..."
-						bind:value={newCategory}
-						class="w-full rounded border px-3 py-2 focus:outline-none focus:ring"
-					/>
-					<button
-						on:click={addCategory}
-						class="mt-2 w-full rounded bg-theme-primary px-4 py-2 text-white"
-					>
-						+ Add List
-					</button>
-					<!-- Display Error Message -->
-					{#if errorMessage}
-						<p class="mt-2 text-sm text-red-600">{errorMessage}</p>
-					{/if}
-				</div>
-
-				<!-- Category List (Fixed height & Scrollable) -->
-				<ul class="h-64 overflow-y-auto rounded-md border border-l-2 border-theme-primary p-2">
-					<li>
-						<a
-							href="/"
-							class="block rounded px-3 py-2 font-bold text-theme-primary hover:bg-gray-200"
-							>All Tasks</a
+				<div class="justify-end">
+					<div class="flex items-center justify-center space-x-2 py-2 pb-8">
+						<img src="/logo.png" alt="Logo" class="h-10 w-10" />
+						<h1 class="text-3xl font-bold text-theme-primary">ListForAll</h1>
+					</div>
+					<!-- New Category Input -->
+					<div class="mb-4">
+						<input
+							type="text"
+							placeholder="New list..."
+							bind:value={newCategory}
+							class="w-full rounded border px-3 py-2 focus:outline-none focus:ring"
+						/>
+						<button
+							on:click={addCategory}
+							class="mt-2 w-full rounded bg-theme-primary px-4 py-2 text-white"
 						>
-					</li>
-					{#each categories as category}
+							+ Add List
+						</button>
+						<!-- Display Error Message -->
+						{#if errorMessage}
+							<p class="mt-2 text-sm text-red-600">{errorMessage}</p>
+						{/if}
+					</div>
+
+					<!-- Category List (Fixed height & Scrollable) -->
+					<ul class="h-[calc(70vh-100px)] overflow-y-auto rounded-md border border-l-2 border-theme-primary p-2">
 						<li>
 							<a
-								href="/{category.category_id}"
-								class=" flex w-full justify-between rounded px-3 py-2 hover:bg-gray-200"
+								href="/"
+								class="block rounded px-3 py-2 font-bold text-theme-primary hover:bg-gray-200"
+								>All Tasks</a
 							>
-								<p class="text-theme-primary">{category.category_name}</p>
-
-								<div class="flex space-x-2">
-									<button class="text-blue-500" on:click={() => enableEditMode(category)}>
-										<Icon icon="mdi:pencil" class="h-5 w-5" />
-									</button>
-									<button
-										class="text-red-500"
-										on:click={() =>
-											confirmDeleteCategory(category.category_id, category.category_name)}
-									>
-										<Icon icon="mdi:trash-can" class="h-5 w-5" />
-									</button>
-								</div>
-							</a>
 						</li>
-					{/each}
-				</ul>
+						{#each categories as category}
+							<li>
+								<a
+									href="/{category.category_id}"
+									class=" flex w-full justify-between rounded px-3 py-2 hover:bg-gray-200"
+								>
+									<p class="text-theme-primary">{category.category_name}</p>
+
+									<div class="flex space-x-2">
+										<button class="text-blue-500" on:click={() => enableEditMode(category)}>
+											<Icon icon="mdi:pencil" class="h-5 w-5" />
+										</button>
+										<button
+											class="text-red-500"
+											on:click={() =>
+												confirmDeleteCategory(category.category_id, category.category_name)}
+										>
+											<Icon icon="mdi:trash-can" class="h-5 w-5" />
+										</button>
+									</div>
+								</a>
+							</li>
+						{/each}
+					</ul>
+				</div>
 				<!-- Settings -->
 				<div class="rounded bg-gray-200">
-					<a href="/account" class="block px-3 py-2 hover:bg-gray-300">
-						⚙️ Account and Settings
-					</a>
-					<a href="/about" class="block px-3 py-2 hover:bg-gray-300">
-						About
-					</a>
+					<a href="/account" class="block px-3 py-2 hover:bg-gray-300"> Account and Settings </a>
+					<a href="/about" class="block px-3 py-2 hover:bg-gray-300"> About </a>
 				</div>
 
 				<!-- Edit Category -->
