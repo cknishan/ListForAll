@@ -22,6 +22,9 @@
 
 	$: ({ supabase, session } = data); // Update supabase and session reactively
 
+	let editingId: string | null = null;
+	let editingName: string = '';
+
 	// Fetch categories for the logged-in user
 	async function fetchCategories() {
 		if (!session) return;
@@ -73,50 +76,56 @@
 
 	// Enable edit mode for a category
 	function enableEditMode(category: any) {
-		editMode = true;
-		editedCategory = { id: category.category_id, name: category.category_name };
+		// no global editMode/editedCategory needed
+		editingId = category.category_id; // keep raw type (uuid/number)
+		editingName = category.category_name ?? '';
+		console.log('Editing category:', editingId, editingName);
 	}
 
 	// Update the category
 	async function updateCategory() {
 		errorMessage = '';
-		if (!editedCategory || !editedCategory.name.trim()) return;
 
-		// Check for duplicates
-		const { data: existingCategories, error: fetchError } = await supabase
+		if (!editingId) return;
+		const trimmed = editingName.trim();
+		if (!trimmed) return;
+
+		// Case-insensitive duplicate check, EXCLUDING the current row
+		const { data: dupCheck, error: fetchError } = await supabase
 			.from('category')
-			.select('category_name')
-			.ilike('category_name', editedCategory.name.trim());
+			.select('category_id')
+			.ilike('category_name', trimmed)
+			.neq('category_id', editingId); // <-- exclude the row being edited
 
 		if (fetchError) {
 			console.error('Error checking category:', fetchError);
 			return;
 		}
-
-		if (existingCategories && existingCategories.length > 0) {
-			errorMessage = `The category "${editedCategory.name}" already exists.`;
+		if (dupCheck && dupCheck.length > 0) {
+			errorMessage = `The category "${trimmed}" already exists.`;
 			return;
 		}
 
-		// Update the category
+		// Perform update using the inline-edit state
 		const { error } = await supabase
 			.from('category')
-			.update({ category_name: editedCategory.name.trim() })
-			.eq('category_id', editedCategory.id);
+			.update({ category_name: trimmed })
+			.eq('category_id', editingId);
 
-		if (!error) {
-			await fetchCategories();
-			cancelEditMode();
-		} else {
+		if (error) {
 			console.error('Error updating category:', error);
 			errorMessage = 'Failed to update category. Please try again.';
+			return;
 		}
+
+		await fetchCategories();
+		cancelEditMode();
 	}
 
 	// Cancel edit mode
 	function cancelEditMode() {
-		editMode = false;
-		editedCategory = null;
+		editingId = null;
+		editingName = '';
 	}
 
 	// Show confirmation dialog before deleting a category
@@ -223,7 +232,9 @@
 					</div>
 
 					<!-- Category List (Fixed height & Scrollable) -->
-					<ul class="h-[calc(70vh-100px)] overflow-y-auto rounded-md border border-l-2 border-theme-primary p-2">
+					<ul
+						class="h-[calc(70vh-100px)] overflow-y-auto rounded-md border border-l-2 border-theme-primary p-2"
+					>
 						<li>
 							<a
 								href="/"
@@ -232,26 +243,65 @@
 							>
 						</li>
 						{#each categories as category}
-							<li>
-								<a
-									href="/{category.category_id}"
-									class=" flex w-full justify-between rounded px-3 py-2 hover:bg-gray-200"
-								>
-									<p class="text-theme-primary">{category.category_name}</p>
-
-									<div class="flex space-x-2">
-										<button class="text-blue-500" on:click={() => enableEditMode(category)}>
-											<Icon icon="mdi:pencil" class="h-5 w-5" />
-										</button>
-										<button
-											class="text-red-500"
-											on:click={() =>
-												confirmDeleteCategory(category.category_id, category.category_name)}
+							<li
+								class="rounded px-2 py-1 {String(editingId) !== String(category.category_id)
+									? 'hover:bg-gray-200'
+									: ''}"
+							>
+								<div class="flex w-full items-center justify-between">
+									<!-- Left side: name OR inline editor -->
+									{#if editingId === category.category_id}
+										<div class="block w-full truncate px-1 py-2 font-medium text-theme-primary">
+											<input
+												class="w-full rounded border px-2 py-1 focus:outline-none focus:ring"
+												type="text"
+												value={editingName}
+												on:input={(e) => (editingName = (e.target as HTMLInputElement).value)}
+												on:keydown={(e) => {
+													if (e.key === 'Enter') updateCategory();
+													if (e.key === 'Escape') cancelEditMode();
+												}}
+											/>
+										</div>
+									{:else}
+										<a
+											href="/{category.category_id}"
+											class="block w-full truncate px-1 py-2 font-medium text-theme-primary"
 										>
-											<Icon icon="mdi:trash-can" class="h-5 w-5" />
-										</button>
+											{category.category_name}
+										</a>
+									{/if}
+
+									<!-- Right side: actions (only show when not editing this row) -->
+									<div class="ml-2 flex shrink-0 items-center gap-2">
+										{#if editingId !== category.category_id}
+											<button
+												class="text-blue-500"
+												on:click={() => enableEditMode(category)}
+												aria-label="Edit category"
+												title="Edit"
+											>
+												<Icon icon="mdi:pencil" class="h-5 w-5" />
+											</button>
+											<button
+												class="text-red-500"
+												on:click={() =>
+													confirmDeleteCategory(category.category_id, category.category_name)}
+												aria-label="Delete category"
+												title="Delete"
+											>
+												<Icon icon="mdi:trash-can" class="h-5 w-5" />
+											</button>
+										{:else}
+											<button class=" text-theme-primary" on:click={updateCategory}>
+												<Icon icon="mdi:content-save" class="h-5 w-5" />
+											</button>
+											<button class="text-white" on:click={cancelEditMode}>
+												<Icon icon="mdi:arrow-u-left-top" class="h-5 w-5" />
+											</button>
+										{/if}
 									</div>
-								</a>
+								</div>
 							</li>
 						{/each}
 					</ul>
@@ -261,29 +311,6 @@
 					<a href="/account" class="block px-3 py-2 hover:bg-gray-300"> Account and Settings </a>
 					<a href="/about" class="block px-3 py-2 hover:bg-gray-300"> About </a>
 				</div>
-
-				<!-- Edit Category -->
-				{#if editMode && editedCategory}
-					<div class="mt-4 text-white">
-						<h3>Edit Category</h3>
-						<input
-							type="text"
-							bind:value={editedCategory.name}
-							class="mt-2 w-full rounded border px-3 py-2 text-theme-bg-dark focus:outline-none focus:ring"
-						/>
-						<div class="mt-2 flex justify-between">
-							<button
-								class="rounded bg-theme-primary px-2 py-2 text-white"
-								on:click={updateCategory}
-							>
-								Update
-							</button>
-							<button class="rounded bg-gray-300 px-2 py-2 text-gray-700" on:click={cancelEditMode}>
-								Cancel
-							</button>
-						</div>
-					</div>
-				{/if}
 			</nav>
 		</section>
 	{/if}
