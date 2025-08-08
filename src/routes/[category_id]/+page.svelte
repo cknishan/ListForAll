@@ -117,8 +117,8 @@
 </svelte:head>
 
 <section class="mx-auto max-w-2xl p-4">
-	<h1 class="mb-6 text-center text-2xl font-bold text-theme-bg-dark">
-		Tasks for {data.category.category_name}
+	<h1 class="todo-title">
+		{data.category.category_name}
 	</h1>
 
 	<form on:submit={handleAddTask} class="mb-4 flex gap-2">
@@ -158,19 +158,20 @@
 		<p class="mb-4 text-sm text-red-600">{errorMessage}</p>
 	{/if}
 
-	<h2 class="text-xl font-semibold">Pending Tasks</h2>
 	<ul class="space-y-4">
 		{#each todos.filter((task: any) => !task.completed) as task (task.task_id)}
 			<TodoItem todo={task} {confirmDeleteTask} toggleTask={() => toggleTask(task.task_id)} />
 		{/each}
 	</ul>
 
-	<h2 class="mt-4 text-xl font-semibold">Completed Tasks</h2>
-	<ul class="space-y-4">
-		{#each todos.filter((task: any) => task.completed) as task (task.task_id)}
-			<TodoItem todo={task} {confirmDeleteTask} toggleTask={() => toggleTask(task.task_id)} />
-		{/each}
-	</ul>
+	{#if todos.some((t) => t.completed)}
+		<h2 class="pending-completed-task">Completed</h2>
+		<ul class="space-y-4">
+			{#each todos.filter((t) => t.completed) as task (task.task_id)}
+				<TodoItem todo={task} {confirmDeleteTask} toggleTask={() => toggleTask(task.task_id)} />
+			{/each}
+		</ul>
+	{/if}
 
 	{#if todos.length === 0}
 		<p class="mt-4 text-center text-gray-500">No tasks yet. Add one above!</p>

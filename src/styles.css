@@ -1,3 +1,11 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+
+.todo-title {
+	@apply my-6 text-3xl font-bold text-theme-primary underline;
+}
+
+.pending-completed-task {
+	@apply my-4 text-xl font-bold text-theme-bg-dark;
+}
